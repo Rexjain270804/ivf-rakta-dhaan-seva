@@ -17,7 +17,7 @@ const AdminLogin = ({ onLogin }: AdminLoginProps) => {
   const { toast } = useToast();
 
   // Simple password check - in production, use proper authentication
-  const ADMIN_PASSWORD = 'ivf2024admin';
+  const ADMIN_PASSWORD = 'JSPCODERS@2025';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
