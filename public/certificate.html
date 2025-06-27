@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate Generator (Frontend Only)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container { max-width: 420px; margin: 60px auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 12px #0001; }
+    h2 { text-align: center; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; }
+    input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    button { width: 100%; padding: 10px; background: #e63946; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+    #canvasWrap { text-align: center; margin-top: 24px; }
+    canvas { border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+  <link rel="preload" href="fonts/ivffont.ttf" as="font" type="font/ttf" crossorigin>
+</head>
+<body>
+  <div class="container">
+    <h2>Generate Your Certificate</h2>
+    <form id="certForm">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+      <button type="submit">Create Certificate</button>
+    </form>
+    <div id="canvasWrap" style="display:none;">
+      <canvas id="certCanvas" width="1200" height="900"></canvas>
+      <br>
+      <button id="downloadBtn">Download as PNG</button>
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('certForm');
+    const canvasWrap = document.getElementById('canvasWrap');
+    const canvas = document.getElementById('certCanvas');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let customFontLoaded = false;
+
+    // Load custom font
+    const font = new FontFace('IVFFont', 'url(fonts/ivffont.ttf)');
+    font.load().then(function(loadedFont) {
+      document.fonts.add(loadedFont);
+      customFontLoaded = true;
+    });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      // Draw certificate after font is loaded
+      if (!customFontLoaded) {
+        alert('Font is still loading. Please try again in a moment.');
+        return;
+      }
+      drawCertificate(name);
+      canvasWrap.style.display = 'block';
+    });
+
+    function drawCertificate(name) {
+      const bg = new window.Image();
+      bg.src = 'ivf blood donation.png';
+      bg.onload = function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+        ctx.font = '48px IVFFont, Arial, sans-serif';
+        ctx.fillStyle = '#222';
+        ctx.textAlign = 'center';
+        // Draw crosshair for debugging
+        const x = canvas.width / 2;
+        const y = 600;
+        ctx.strokeStyle = 'red';
+        ctx.beginPath();
+        ctx.moveTo(x - 20, y); ctx.lineTo(x + 20, y);
+        ctx.moveTo(x, y - 20); ctx.lineTo(x, y + 20);
+        ctx.stroke();
+        // Draw the name
+        ctx.fillText(name, x, y);
+      };
+    }
+
+    downloadBtn.addEventListener('click', function() {
+      const link = document.createElement('a');
+      link.download = 'certificate.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  </script>
+</body>
+</html>
