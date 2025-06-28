@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, fullName, relationPrefix, bloodGroup, registrationId } = await req.json()
+    const { email, fullName, bloodGroup, registrationId } = await req.json()
 
     // Create HTML email template for certificate
     const htmlTemplate = `
@@ -59,7 +59,7 @@ serve(async (req) => {
             </div>
             
             <div class="recipient">
-                ${relationPrefix} ${fullName}
+                ${fullName}
             </div>
             
             <div class="message">

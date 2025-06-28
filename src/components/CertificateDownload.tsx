@@ -1,5 +1,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
+import { Check } from "lucide-react";
 
 interface CertificateDownloadProps {
   name: string;
@@ -56,7 +57,6 @@ const CertificateDownload: React.FC<CertificateDownloadProps> = ({ name, show })
       ctx.shadowOffsetY = 2;
       
       // Position the name in the center-lower part of the certificate
-      // Adjust these coordinates based on your certificate template
       const textX = CANVAS_WIDTH / 2; // Center horizontally
       const textY = CANVAS_HEIGHT * 0.65; // About 65% down from top
       
@@ -83,38 +83,30 @@ const CertificateDownload: React.FC<CertificateDownloadProps> = ({ name, show })
     };
   }, []);
 
-  const handleDownload = (format: 'png' | 'jpg' = 'jpg') => {
+  const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas || !imageReady) return;
     
-    let dataURL;
-    if (format === 'jpg') {
-      // Create a white background for JPG
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = CANVAS_WIDTH;
-      tempCanvas.height = CANVAS_HEIGHT;
-      const tempCtx = tempCanvas.getContext('2d');
-      
-      if (tempCtx) {
-        // Fill with white background
-        tempCtx.fillStyle = 'white';
-        tempCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        
-        // Draw the original canvas on top
-        tempCtx.drawImage(canvas, 0, 0);
-        
-        dataURL = tempCanvas.toDataURL('image/jpeg', 0.95);
-      } else {
-        dataURL = canvas.toDataURL('image/png');
-      }
-    } else {
-      dataURL = canvas.toDataURL('image/png');
-    }
+    // Create a white background for JPG
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = CANVAS_WIDTH;
+    tempCanvas.height = CANVAS_HEIGHT;
+    const tempCtx = tempCanvas.getContext('2d');
     
-    const link = document.createElement("a");
-    link.download = `blood-donation-certificate.${format}`;
-    link.href = dataURL;
-    link.click();
+    if (tempCtx) {
+      // Fill with white background
+      tempCtx.fillStyle = 'white';
+      tempCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      
+      // Draw the original canvas on top
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      const dataURL = tempCanvas.toDataURL('image/jpeg', 0.95);
+      const link = document.createElement("a");
+      link.download = `blood-donation-certificate.jpg`;
+      link.href = dataURL;
+      link.click();
+    }
   };
 
   if (!show) return null;
@@ -137,28 +129,27 @@ const CertificateDownload: React.FC<CertificateDownloadProps> = ({ name, show })
         />
       </div>
       
-      <div className="flex gap-3 justify-center flex-wrap">
-        <button 
-          onClick={() => handleDownload('jpg')} 
-          disabled={!imageReady}
-          className="px-6 py-3 bg-ivf-red text-white rounded-lg font-semibold hover:bg-ivf-red/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
-        >
-          Download Certificate (JPG)
-        </button>
-        <button 
-          onClick={() => handleDownload('png')} 
-          disabled={!imageReady}
-          className="px-6 py-3 bg-ivf-navy text-white rounded-lg font-semibold hover:bg-ivf-navy/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
-        >
-          Download Certificate (PNG)
-        </button>
+      <div className="flex items-center justify-center gap-4 mb-4">
+        {imageReady ? (
+          <div className="flex items-center text-green-600 font-medium">
+            <Check className="h-5 w-5 mr-2" />
+            Certificate Generated Successfully
+          </div>
+        ) : (
+          <div className="flex items-center text-gray-500">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-ivf-red mr-2"></div>
+            Generating certificate...
+          </div>
+        )}
       </div>
       
-      {!imageReady && (
-        <p className="text-sm text-gray-500 mt-2">
-          Generating certificate...
-        </p>
-      )}
+      <button 
+        onClick={handleDownload} 
+        disabled={!imageReady}
+        className="px-8 py-3 bg-ivf-red text-white rounded-lg font-semibold hover:bg-ivf-red/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+      >
+        Download Certificate (JPG)
+      </button>
     </div>
   );
 };

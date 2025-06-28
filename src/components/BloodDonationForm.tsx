@@ -13,7 +13,6 @@ import CertificateDownload from "./CertificateDownload";
 interface FormData {
   fullName: string;
   email: string;
-  relationPrefix: string;
   mobile: string;
   address: string;
   bloodGroup: string;
@@ -24,7 +23,6 @@ const BloodDonationForm = () => {
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
-    relationPrefix: '',
     mobile: '',
     address: '',
     bloodGroup: '',
@@ -34,12 +32,6 @@ const BloodDonationForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-
-  const relationPrefixes = [
-    { value: 'श्री', label: 'श्री (Mr.)' },
-    { value: 'सुश्री', label: 'सुश्री (Ms.)' },
-    { value: 'श्रीमती', label: 'श्रीमती (Mrs.)' },
-  ];
 
   const bloodGroups = [
     'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
@@ -90,7 +82,7 @@ const BloodDonationForm = () => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.fullName || !formData.email || !formData.relationPrefix || 
+    if (!formData.fullName || !formData.email || 
         !formData.mobile || !formData.address || !formData.bloodGroup) {
       toast({
         title: "कृपया सभी आवश्यक फील्ड भरें",
@@ -148,7 +140,6 @@ const BloodDonationForm = () => {
       const insertData = {
         full_name: formData.fullName,
         email: formData.email,
-        relation_prefix: formData.relationPrefix,
         mobile: formData.mobile,
         address: formData.address,
         blood_group: formData.bloodGroup,
@@ -182,7 +173,6 @@ const BloodDonationForm = () => {
           body: {
             email: formData.email,
             fullName: formData.fullName,
-            relationPrefix: formData.relationPrefix,
             bloodGroup: formData.bloodGroup,
             registrationId: data.id
           }
@@ -246,13 +236,13 @@ const BloodDonationForm = () => {
               </p>
             </div>
             <CertificateDownload 
-              name={`${formData.relationPrefix} ${formData.fullName}`} 
+              name={formData.fullName} 
               show={true} 
             />
             <div className="bg-ivf-yellow/10 p-4 rounded-lg mb-6">
               <p className="text-sm text-ivf-navy font-medium">
                 <strong>Registration Details:</strong><br />
-                Name: {formData.relationPrefix} {formData.fullName}<br />
+                Name: {formData.fullName}<br />
                 Email: {formData.email}<br />
                 Blood Group: {formData.bloodGroup}
               </p>
@@ -316,25 +306,6 @@ const BloodDonationForm = () => {
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Relation Prefix */}
-                <div className="space-y-2">
-                  <Label htmlFor="relationPrefix" className="text-sm font-medium text-ivf-navy">
-                    संबोधन / Relation Prefix *
-                  </Label>
-                  <Select onValueChange={(value) => handleInputChange('relationPrefix', value)}>
-                    <SelectTrigger className="border-ivf-skyblue/30 focus:border-ivf-skyblue">
-                      <SelectValue placeholder="चुनें / Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {relationPrefixes.map((prefix) => (
-                        <SelectItem key={prefix.value} value={prefix.value}>
-                          {prefix.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 {/* Full Name */}
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-sm font-medium text-ivf-navy">

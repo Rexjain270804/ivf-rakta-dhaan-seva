@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +12,6 @@ interface BloodDonation {
   id: string;
   full_name: string;
   email: string;
-  relation_prefix: string;
   mobile: string;
   address: string;
   blood_group: string;
@@ -78,7 +76,7 @@ const AdminDashboard = () => {
           setTotalCount(prev => prev + 1);
           toast({
             title: "New Registration!",
-            description: `${payload.new.relation_prefix} ${payload.new.full_name} has registered for blood donation`,
+            description: `${payload.new.full_name} has registered for blood donation`,
           });
         }
       )
@@ -103,7 +101,6 @@ const AdminDashboard = () => {
     const headers = [
       'S.No.',
       'Registration Date',
-      'Relation Prefix',
       'Full Name',
       'Email',
       'Mobile',
@@ -117,7 +114,6 @@ const AdminDashboard = () => {
       ...donations.map((donation, index) => [
         index + 1,
         format(new Date(donation.created_at), 'dd/MM/yyyy HH:mm'),
-        `"${donation.relation_prefix}"`,
         `"${donation.full_name}"`,
         `"${donation.email}"`,
         `"${donation.mobile}"`,
@@ -277,7 +273,7 @@ const AdminDashboard = () => {
                         <TableCell className="font-medium">
                           <div>
                             <p className="font-semibold text-ivf-navy">
-                              {donation.relation_prefix} {donation.full_name}
+                              {donation.full_name}
                             </p>
                           </div>
                         </TableCell>
