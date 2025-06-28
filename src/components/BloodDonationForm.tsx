@@ -34,7 +34,7 @@ const BloodDonationForm = () => {
   const { toast } = useToast();
 
   const bloodGroups = [
-    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-','Dont Know', 'Other'
   ];
 
   const handleInputChange = (field: keyof FormData, value: string) => {
