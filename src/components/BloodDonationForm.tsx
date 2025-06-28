@@ -136,7 +136,7 @@ const BloodDonationForm = () => {
         dbDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       }
       
-      // Prepare data for insertion
+      // Prepare data for insertion - removed relation_prefix
       const insertData = {
         full_name: formData.fullName,
         email: formData.email,

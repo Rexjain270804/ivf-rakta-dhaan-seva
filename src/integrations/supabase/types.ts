@@ -19,7 +19,6 @@ export type Database = {
           id: string
           last_donation_date: string | null
           mobile: string
-          relation_prefix: string
           updated_at: string
         }
         Insert: {
@@ -31,7 +30,6 @@ export type Database = {
           id?: string
           last_donation_date?: string | null
           mobile: string
-          relation_prefix: string
           updated_at?: string
         }
         Update: {
@@ -43,7 +41,6 @@ export type Database = {
           id?: string
           last_donation_date?: string | null
           mobile?: string
-          relation_prefix?: string
           updated_at?: string
         }
         Relationships: []
