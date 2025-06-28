@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { Check } from "lucide-react";
+import { url } from "inspector";
 
 interface CertificateDownloadProps {
   name: string;
@@ -39,16 +40,19 @@ const CertificateDownload: React.FC<CertificateDownloadProps> = ({ name, show })
     if (!ctx) return;
     
     const bg = new Image();
-    bg.src = "/ivf blood donation.png";
+    bg.src = "https://i.ibb.co/Zz1Cks34/ivf-blood-donation-2.png"; // Background image URL
     bg.onload = function () {
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       
       // Set font properties
-      ctx.font = "bold 48px IVFFont, Arial, sans-serif";
+      ctx.font = "bold 32px IVFFont, Arial, sans-serif";
       ctx.fillStyle = "#1a365d"; // Dark blue color
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
+
+      // Capitalize the first letter of the name
+      const displayName = name.charAt(0).toUpperCase() + name.slice(1);
       
       // Add text shadow for better visibility
       ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
@@ -57,10 +61,10 @@ const CertificateDownload: React.FC<CertificateDownloadProps> = ({ name, show })
       ctx.shadowOffsetY = 2;
       
       // Position the name in the center-lower part of the certificate
-      const textX = CANVAS_WIDTH / 2; // Center horizontally
-      const textY = CANVAS_HEIGHT * 0.65; // About 65% down from top
+      const textX = CANVAS_WIDTH * 0.40; // Center horizontally (45% of width)
+      const textY = CANVAS_HEIGHT * 0.43; // About 43% down from top
       
-      ctx.fillText(name, textX, textY);
+      ctx.fillText(displayName, textX, textY);
       
       // Reset shadow
       ctx.shadowColor = "transparent";
@@ -75,7 +79,7 @@ const CertificateDownload: React.FC<CertificateDownloadProps> = ({ name, show })
   // Preload background image
   useEffect(() => {
     const bg = new Image();
-    bg.src = "/ivf blood donation.png";
+    bg.src = "https://i.ibb.co/Zz1Cks34/ivf-blood-donation-2.png";
     bg.onload = () => setBgLoaded(true);
     bg.onerror = () => {
       console.error('Failed to load certificate background');
