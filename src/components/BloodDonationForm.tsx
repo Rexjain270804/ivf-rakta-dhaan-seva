@@ -423,9 +423,6 @@ const BloodDonationForm = () => {
           <p className="font-poppins">
             International Vaish Federation - Serving Humanity
           </p>
-          <p className="font-poppins">
-            Designed By Rishabh Bothra Contact +91-8955226422
-          </p>
         </div>
       </div>
     </div>
