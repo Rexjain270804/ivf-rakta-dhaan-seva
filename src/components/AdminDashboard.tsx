@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Users, Calendar, Mail, Phone, MapPin, Droplet } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Heart, Users, Calendar, Mail, Phone, MapPin, Droplet, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -87,6 +88,61 @@ const AdminDashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [toast]);
+
+  const exportToExcel = () => {
+    if (donations.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No registrations available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create CSV content
+    const headers = [
+      'S.No.',
+      'Registration Date',
+      'Relation Prefix',
+      'Full Name',
+      'Email',
+      'Mobile',
+      'Address',
+      'Blood Group',
+      'Last Donation Date'
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...donations.map((donation, index) => [
+        index + 1,
+        format(new Date(donation.created_at), 'dd/MM/yyyy HH:mm'),
+        `"${donation.relation_prefix}"`,
+        `"${donation.full_name}"`,
+        `"${donation.email}"`,
+        `"${donation.mobile}"`,
+        `"${donation.address}"`,
+        `"${donation.blood_group}"`,
+        donation.last_donation_date ? format(new Date(donation.last_donation_date), 'dd/MM/yyyy') : 'First Time'
+      ].join(','))
+    ].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `blood-donations-${format(new Date(), 'dd-MM-yyyy')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export Successful",
+      description: "Registration data has been exported to CSV file",
+    });
+  };
 
   const getBloodGroupColor = (bloodGroup: string) => {
     const colors: { [key: string]: string } = {
@@ -176,13 +232,25 @@ const AdminDashboard = () => {
         {/* Registrations Table */}
         <Card className="shadow-2xl border-ivf-skyblue/20 bg-white/95">
           <CardHeader className="bg-gradient-to-r from-ivf-navy to-ivf-skyblue text-white">
-            <CardTitle className="text-2xl font-mukta flex items-center">
-              <Heart className="h-6 w-6 mr-2" />
-              रियल-टाइम पंजीकरण / Real-time Registrations
-            </CardTitle>
-            <CardDescription className="text-white/90">
-              Live updates of blood donation registrations
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-2xl font-mukta flex items-center">
+                  <Heart className="h-6 w-6 mr-2" />
+                  रियल-टाइम पंजीकरण / Real-time Registrations
+                </CardTitle>
+                <CardDescription className="text-white/90">
+                  Live updates of blood donation registrations
+                </CardDescription>
+              </div>
+              <Button
+                onClick={exportToExcel}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                disabled={donations.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export to Excel
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {donations.length === 0 ? (

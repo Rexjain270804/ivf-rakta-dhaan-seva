@@ -1,14 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Heart, Users, MapPin } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { Heart, Users, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import CertificateDownload from "./CertificateDownload";
@@ -20,7 +17,7 @@ interface FormData {
   mobile: string;
   address: string;
   bloodGroup: string;
-  lastDonationDate: Date | undefined;
+  lastDonationDate: string;
 }
 
 const BloodDonationForm = () => {
@@ -31,7 +28,7 @@ const BloodDonationForm = () => {
     mobile: '',
     address: '',
     bloodGroup: '',
-    lastDonationDate: undefined,
+    lastDonationDate: '',
   });
   
   const [submitted, setSubmitted] = useState(false);
@@ -48,11 +45,45 @@ const BloodDonationForm = () => {
     'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
   ];
 
-  const handleInputChange = (field: keyof FormData, value: string | Date | undefined) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleDateInputChange = (value: string) => {
+    // Allow only numbers and forward slashes
+    const cleanValue = value.replace(/[^\d/]/g, '');
+    
+    // Auto-format as user types
+    let formattedValue = cleanValue;
+    if (cleanValue.length >= 2 && !cleanValue.includes('/')) {
+      formattedValue = cleanValue.slice(0, 2) + '/' + cleanValue.slice(2);
+    } else if (cleanValue.length >= 5 && cleanValue.split('/').length === 2) {
+      const parts = cleanValue.split('/');
+      formattedValue = parts[0] + '/' + parts[1].slice(0, 2) + '/' + parts[1].slice(2);
+    }
+    
+    // Limit to 10 characters (dd/mm/yyyy)
+    if (formattedValue.length <= 10) {
+      handleInputChange('lastDonationDate', formattedValue);
+    }
+  };
+
+  const validateDate = (dateString: string) => {
+    if (!dateString) return true; // Optional field
+    
+    const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!datePattern.test(dateString)) return false;
+    
+    const [day, month, year] = dateString.split('/').map(num => parseInt(num));
+    const date = new Date(year, month - 1, day);
+    
+    return date.getDate() === day && 
+           date.getMonth() === month - 1 && 
+           date.getFullYear() === year &&
+           date <= new Date();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,10 +122,27 @@ const BloodDonationForm = () => {
       return;
     }
 
+    // Date validation
+    if (formData.lastDonationDate && !validateDate(formData.lastDonationDate)) {
+      toast({
+        title: "अमान्य तारीख",
+        description: "Please enter a valid date in DD/MM/YYYY format",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       console.log('Submitting form data:', formData);
+      
+      // Convert date format for database (dd/mm/yyyy to yyyy-mm-dd)
+      let dbDate = null;
+      if (formData.lastDonationDate) {
+        const [day, month, year] = formData.lastDonationDate.split('/');
+        dbDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
       
       // Prepare data for insertion
       const insertData = {
@@ -104,7 +152,7 @@ const BloodDonationForm = () => {
         mobile: formData.mobile,
         address: formData.address,
         blood_group: formData.bloodGroup,
-        last_donation_date: formData.lastDonationDate ? formData.lastDonationDate.toISOString().split('T')[0] : null
+        last_donation_date: dbDate
       };
 
       console.log('Insert data:', insertData);
@@ -197,7 +245,10 @@ const BloodDonationForm = () => {
                 <b>Download your certificate below.</b>
               </p>
             </div>
-            <CertificateDownload name={formData.fullName} show={true} />
+            <CertificateDownload 
+              name={`${formData.relationPrefix} ${formData.fullName}`} 
+              show={true} 
+            />
             <div className="bg-ivf-yellow/10 p-4 rounded-lg mb-6">
               <p className="text-sm text-ivf-navy font-medium">
                 <strong>Registration Details:</strong><br />
@@ -251,7 +302,6 @@ const BloodDonationForm = () => {
             Bikaner Chapter
           </p>
         </div>
-
 
         {/* Form */}
         <Card className="shadow-2xl border-ivf-skyblue/20 bg-white/95">
@@ -355,34 +405,15 @@ const BloodDonationForm = () => {
                   <Label className="text-sm font-medium text-ivf-navy">
                     अंतिम रक्तदान की तारीख / Last Donation Date
                   </Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal border-ivf-skyblue/30 focus:border-ivf-skyblue",
-                          !formData.lastDonationDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.lastDonationDate ? (
-                          format(formData.lastDonationDate, "PPP")
-                        ) : (
-                          <span>Pick a date (optional)</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.lastDonationDate}
-                        onSelect={(date) => handleInputChange('lastDonationDate', date)}
-                        disabled={(date) => date > new Date()}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Input
+                    type="text"
+                    value={formData.lastDonationDate}
+                    onChange={(e) => handleDateInputChange(e.target.value)}
+                    className="border-ivf-skyblue/30 focus:border-ivf-skyblue"
+                    placeholder="DD/MM/YYYY (optional)"
+                    maxLength={10}
+                  />
+                  <p className="text-xs text-gray-500">Format: DD/MM/YYYY (e.g., 15/03/2023)</p>
                 </div>
               </div>
 
